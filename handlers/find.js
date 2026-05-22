@@ -4,8 +4,6 @@ const userFilters = require('../state/userFilters')
 
 const REGIONS = require('../data/regions')
 
-const BEDROOMS = require('../data/bedrooms')
-
 module.exports = async (ctx) => {
 
   const userId = ctx.from.id
@@ -13,7 +11,8 @@ module.exports = async (ctx) => {
   userFilters[userId] = {
     step: 'regions',
     regions: [],
-    bedrooms: []
+    bedrooms: [],
+    maxPrice: null
   }
 
   const keyboard = REGIONS.map(region => {

@@ -6,6 +6,8 @@ const REGIONS = require('../data/regions')
 
 const BEDROOMS = require('../data/bedrooms')
 
+const PRICES = require('../data/prices')
+
 const supabase = require('../services/supabase')
 
 module.exports = async (ctx) => {
@@ -201,53 +203,82 @@ module.exports = async (ctx) => {
 
     }
 
-    if (data === 'bedrooms_apply') {
+    if (data === "bedrooms_apply") {
+      userFilters[userId].step = 'price'
 
-  const filters = userFilters[userId]
+      const keyboard = PRICES.map((price, index) => {
+        return [{
+          text: price.label,
+          callback_data: `price_${index}`
+        }]
+      })
 
-  const { data: results, error } =
-    await supabase
-      .from('resales')
-      .select('*')
-      .in('region', filters.regions)
-      .in('bedroom', filters.bedrooms)
+      await ctx.reply(
+        'Выберите диапазон цены:',
+        {
+          reply_markup: {
+            inline_keyboard: keyboard
+          }
+        }
+      )
+    }
 
-  if (error) {
-    console.log(error)
-    return
-  }
+    if (data.startsWith('price_')) {
+      
+      const index = Number(data.replace('price_', ''))
 
-  if (results.length === 0) {
-    return ctx.reply('Ничего не найдено')
-  }
+      const selectedPrice = PRICES[index]
 
-  for (const item of results) {
+      userFilters[userId].maxPrice = selectedPrice.value
 
-    const cleanChatId = item.chat_id
-      .toString()
-      .replace('-100', '')
+      const filters = userFilters[userId]
 
-    const postLink =
-      `https://t.me/c/${cleanChatId}/${item.message_id}`
+      let query = supabase
+        .from('resales')
+        .select('*')
+        .in('region', filters.regions)
+        .in('bedroom', filters.bedrooms)
 
-    await ctx.reply(
-      `🏡 ${item.complex}
+      if (filters.maxPrice !== null) {
+        query = query.lte('price', filters.maxPrice)
+      }
+
+      const { data: results, error } = await query
+
+      if (error) {
+        console.log(error)
+        return
+      }
+
+      if (results.length === 0) {
+        return ctx.reply('Ничего не найдено')
+      }
+
+      for (const item of results) {
+
+        const cleanChatId = 
+          item.chat_id
+            .toString()
+            .replace('-100', '')
+
+        const postLink = `https://t.me/c/${cleanChatId}/${item.message_id}`
+
+        await ctx.reply(
+          `🏡 ${item.complex}
 💷 £${item.price}
 🛏 ${item.bedroom}
 📍 ${item.region}`,
-      {
-        reply_markup: {
-          inline_keyboard: [[
-            {
-              text: 'Открыть объект',
-              url: postLink
+          {
+            reply_markup: {
+              inline_keyboard: [[
+                {
+                  text: 'Открыть объект',
+                  url: postLink
+                }
+              ]]
             }
-          ]]
-        }
+          }
+        )
       }
-    )
-
-  }
-
-}
+    }
 }
