@@ -2,6 +2,8 @@ const { Telegraf } = require('telegraf')
 
 const userFilters = require('../state/userFilters')
 
+const findHandler = require('./find')
+
 const REGIONS = require('../data/regions')
 
 const BEDROOMS = require('../data/bedrooms')
@@ -14,6 +16,10 @@ module.exports = async (ctx) => {
 
   const userId = ctx.from.id
   const data = ctx.callbackQuery.data
+
+  if (data === 'start_find') {
+    return findHandler(ctx)
+  }
 
   if (!userFilters[userId]) {
     return
@@ -251,7 +257,16 @@ module.exports = async (ctx) => {
       }
 
       if (results.length === 0) {
-        return ctx.reply('Ничего не найдено')
+        return ctx.reply('Ничего не найдено', {
+          reply_markup: {
+            inline_keyboard: [[
+              {
+                text: '🔍 Новый поиск',
+                callback_data: 'start_find'
+              }
+            ]]
+          }
+        })
       }
 
       for (const item of results) {
@@ -265,6 +280,7 @@ module.exports = async (ctx) => {
 
         await ctx.reply(
           `🏡 ${item.complex}
+🏙 ${item.developer}
 💷 £${item.price}
 🛏 ${item.bedroom}
 📍 ${item.region}`,
@@ -280,5 +296,16 @@ module.exports = async (ctx) => {
           }
         )
       }
+
+      await ctx.reply('Хотите выполнить новый поиск?', {
+        reply_markup: {
+          inline_keyboard: [[
+            {
+              text: '🔍 Новый поиск',
+              callback_data: 'start_find'
+            }
+          ]]
+        }
+      })
     }
 }

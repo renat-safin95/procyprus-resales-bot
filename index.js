@@ -11,7 +11,23 @@ const findHandler = require('./handlers/find')
 const callbackHandler = require('./handlers/callback')
 
 bot.start((ctx) => {
-  ctx.reply('Бот работает 🚀')
+  ctx.reply(
+    `Добро пожаловать в ProCyprus 🏡
+    
+Здесь вы можете найти ресейл-объекты на Северном Кипре с удобными фильтрами.`,
+    {
+      reply_markup: {
+        inline_keyboard: [
+          [
+            {
+              text: '🔍 Начать поиск',
+              callback_data: 'start_find'
+            }
+          ]
+        ]
+      }
+    }
+  )
 })
 
 bot.command('find', findHandler)
