@@ -1,5 +1,3 @@
-const { Telegraf } = require('telegraf')
-
 const userFilters = require('../state/userFilters')
 
 const findHandler = require('./find')
