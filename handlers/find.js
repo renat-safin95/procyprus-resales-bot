@@ -9,6 +9,8 @@ module.exports = async (ctx) => {
   userFilters[userId] = {
     step: 'regions',
     regions: [],
+    complexes: [],
+    availableComplexes: [],
     bedrooms: [],
     maxPrice: null
   }

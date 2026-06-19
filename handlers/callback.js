@@ -9,6 +9,7 @@ const BEDROOMS = require('../data/bedrooms')
 const PRICES = require('../data/prices')
 
 const supabase = require('../services/supabase')
+const { inlineKeyboard } = require('telegraf/markup')
 
 module.exports = async (ctx) => {
 
@@ -96,6 +97,136 @@ module.exports = async (ctx) => {
   }
 
   if (data === 'regions_apply') {
+
+    userFilters[userId].step = 'complexes'
+
+    const { data: complexes, error } = await supabase
+      .from('resales')
+      .select('complex')
+      .in('region', userFilters[userId].regions)
+
+    if (error) {
+      console.log(error)
+      return
+    }
+
+    const uniqueComplexes = [
+      ...new Set(
+      complexes.map(c => c.complex)
+      )
+    ]
+
+    userFilters[userId].availableComplexes = uniqueComplexes
+
+      const keyboard = uniqueComplexes.map(complex => {
+        return [{
+          text: `☐ ${complex}`,
+          callback_data: `complex_${complex}`
+        }]
+      })
+
+      keyboard.push([
+        {
+          text: '🌍 Выбрать всё',
+          callback_data: 'complexes_all'
+        }
+      ])
+
+      keyboard.push([
+        {
+          text: '✅ Искать',
+          callback_data: 'complexes_apply'
+        }
+      ])
+
+      await ctx.reply(
+        'Выберите комплекс:',
+        {
+          reply_markup: {
+            inline_keyboard: keyboard
+          }
+        }
+      )
+  }
+
+  if (data.startsWith('complex_')) {
+    
+    const complex = data.replace('complex_', '')
+
+    const complexes = userFilters[userId].complexes
+
+    const availableComplexes = userFilters[userId].availableComplexes
+
+    if (complexes.includes(complex)) {
+      userFilters[userId].complexes = 
+      complexes.filter(c => c !== complex)
+    } else {
+      complexes.push(complex)
+    }
+
+    const keyboard = availableComplexes.map(c => {
+      
+      const selected = userFilters[userId].complexes.includes(c)
+      
+      return [{
+        text: `${selected ? '☑️' : '☐'} ${c}`,
+        callback_data: `complex_${c}`
+      }]
+    })
+
+    keyboard.push([
+      {
+        text: '🌍 Выбрать всё',
+        callback_data: 'complexes_all'
+      }
+    ])
+
+    keyboard.push([
+      {
+        text: '✅ Искать',
+        callback_data: 'complexes_apply'
+      }
+    ])
+
+    await ctx.editMessageReplyMarkup({
+      inline_keyboard: keyboard
+    })
+  }
+
+  if (data === 'complexes_all') {
+    
+
+    const availableComplexes = userFilters[userId].availableComplexes
+
+    userFilters[userId].complexes = [...availableComplexes]
+
+    const keyboard = availableComplexes.map(c => {
+      return [{
+        text: `☑️ ${c}`,
+        callback_data: `complex_${c}`
+      }]
+    })
+
+    keyboard.push([
+      {
+        text: '🌍 Выбрать всё',
+        callback_data: 'complexes_all'
+      }
+    ])
+
+    keyboard.push([
+      {
+        text: '✅ Искать',
+        callback_data: 'complexes_apply'
+      }
+    ])
+
+    await ctx.editMessageReplyMarkup({
+      inline_keyboard: keyboard
+    })
+  }
+
+  if (data === 'complexes_apply') {
     
     userFilters[userId].step = 'bedrooms'
     
@@ -241,6 +372,7 @@ module.exports = async (ctx) => {
         .from('resales')
         .select('*')
         .in('region', filters.regions)
+        .in('complex', filters.complexes)
         .in('bedroom', filters.bedrooms)
 
       if (filters.maxPrice !== null) {
