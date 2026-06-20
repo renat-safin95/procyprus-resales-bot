@@ -9,7 +9,7 @@ const BEDROOMS = require('../data/bedrooms')
 const PRICES = require('../data/prices')
 
 const supabase = require('../services/supabase')
-const { inlineKeyboard } = require('telegraf/markup')
+// const { inlineKeyboard } = require('telegraf/markup')
 
 module.exports = async (ctx) => {
 
@@ -397,6 +397,24 @@ module.exports = async (ctx) => {
             ]]
           }
         })
+      }
+
+      if (results.length > 20) {
+        return ctx.reply(
+          `Найдено объектов: ${results.length} 😅
+
+Слишком много результатов.
+Попробуйте выбрать конкретный комплекс, тип квартиры или цену`, {
+          reply_markup: {
+            inline_keyboard: [[
+              {
+                text: '🔍 Новый поиск',
+                callback_data: 'start_find'
+              }
+            ]]
+          }
+}
+        )
       }
 
       for (const item of results) {
