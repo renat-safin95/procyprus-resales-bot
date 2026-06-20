@@ -387,6 +387,7 @@ module.exports = async (ctx) => {
       }
 
       if (results.length === 0) {
+        delete userFilters[userId]
         return ctx.reply('Ничего не найдено', {
           reply_markup: {
             inline_keyboard: [[
@@ -400,6 +401,7 @@ module.exports = async (ctx) => {
       }
 
       if (results.length > 20) {
+        delete userFilters[userId]
         return ctx.reply(
           `Найдено объектов: ${results.length} 😅
 
@@ -455,5 +457,7 @@ module.exports = async (ctx) => {
           ]]
         }
       })
+
+      delete userFilters[userId]
     }
 }
