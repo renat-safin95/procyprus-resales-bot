@@ -9,9 +9,9 @@ const BEDROOMS = require('../data/bedrooms')
 const PRICES = require('../data/prices')
 
 const supabase = require('../services/supabase')
-// const { inlineKeyboard } = require('telegraf/markup')
 
 module.exports = async (ctx) => {
+  await ctx.answerCbQuery().catch(() => {})
 
   const userId = ctx.from.id
   const data = ctx.callbackQuery.data
@@ -428,12 +428,16 @@ module.exports = async (ctx) => {
 
         const postLink = `https://t.me/c/${cleanChatId}/${item.message_id}`
 
+        const seaViewText = item.seaview ? '\n🌊 Вид на море' : ''
+
+        const titleText = item.title_ready ? '\n📄 Титул готов' : ''
+
         await ctx.reply(
           `🏡 ${item.complex}
 🏙 ${item.developer}
 💷 £${item.price}
 🛏 ${item.bedroom}
-📍 ${item.region}`,
+📍 ${item.region}${seaViewText}${titleText}`,
           {
             reply_markup: {
               inline_keyboard: [[
