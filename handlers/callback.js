@@ -100,13 +100,19 @@ module.exports = async (ctx) => {
 
     userFilters[userId].step = 'complexes'
 
+    if (userFilters[userId].regions.length === 0) {
+      return ctx.reply(
+        'Выберите хотя бы один регион ⬆'
+      )
+    }
+
     const { data: complexes, error } = await supabase
       .from('resales')
       .select('complex')
       .in('region', userFilters[userId].regions)
 
     if (error) {
-      console.log(error)
+      console.error('[Supabase]', error)
       return
     }
 
@@ -230,6 +236,12 @@ module.exports = async (ctx) => {
     
     userFilters[userId].step = 'bedrooms'
     
+    if (userFilters[userId].complexes.length === 0) {
+      return ctx.reply(
+        'Выберите хотя бы один комплекс ⬆'
+      )
+    }
+
     const keyboard = BEDROOMS.map(bedroom => {
         return [{
         text: `☐ ${bedroom}`,
@@ -341,6 +353,11 @@ module.exports = async (ctx) => {
     if (data === "bedrooms_apply") {
       userFilters[userId].step = 'price'
 
+      if (userFilters[userId].bedrooms.length === 0) {
+        return ctx.reply(
+          'Выберите хотя бы один тип квартиры ⬆'
+        )
+      }
       const keyboard = PRICES.map((price, index) => {
         return [{
           text: price.label,
@@ -379,10 +396,10 @@ module.exports = async (ctx) => {
         query = query.lte('price', filters.maxPrice)
       }
 
-      const { data: results, error } = await query
+      const { data: results, error } = await query.limit(21)
 
       if (error) {
-        console.log(error)
+        console.error('[Supabase]', error)
         return
       }
 
@@ -424,7 +441,7 @@ module.exports = async (ctx) => {
         const cleanChatId = 
           item.chat_id
             .toString()
-            .replace('-100', '')
+            .replace(/^-100/, '')
 
         const postLink = `https://t.me/c/${cleanChatId}/${item.message_id}`
 
