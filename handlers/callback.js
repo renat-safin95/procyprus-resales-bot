@@ -398,6 +398,10 @@ module.exports = async (ctx) => {
 
       const { data: results, error } = await query.limit(21)
 
+      const tooManyResults = results.length > 20
+
+      const displayedResults = tooManyResults ? results.slice(0, 20) : results
+
       if (error) {
         console.error('[Supabase]', error)
         return
@@ -417,25 +421,7 @@ module.exports = async (ctx) => {
         })
       }
 
-      if (results.length > 20) {
-        delete userFilters[userId]
-        return ctx.reply(
-          `Найдено слишком много объектов (более 20) 😅
-
-Пожалуйста, попробуйте выбрать конкретный комплекс, тип квартиры или цену`, {
-          reply_markup: {
-            inline_keyboard: [[
-              {
-                text: '🔍 Новый поиск',
-                callback_data: 'start_find'
-              }
-            ]]
-          }
-}
-        )
-      }
-
-      for (const item of results) {
+      for (const item of displayedResults) {
 
         const cleanChatId = 
           item.chat_id
@@ -464,6 +450,15 @@ module.exports = async (ctx) => {
               ]]
             }
           }
+        )
+      }
+
+      if (tooManyResults) {
+        await ctx.reply(
+          `Найдено слишком много объектов (более 20) 😅
+
+Чтобы не перегружать чат, показаны только первые 20 результатов.
+Для более точного поиска рекомендуем выбрать конкретный комплекс, тип квартиры или цену.`
         )
       }
 
