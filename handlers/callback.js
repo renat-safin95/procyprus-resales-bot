@@ -420,10 +420,9 @@ module.exports = async (ctx) => {
       if (results.length > 20) {
         delete userFilters[userId]
         return ctx.reply(
-          `Найдено объектов: ${results.length} 😅
+          `Найдено слишком много объектов (более 20) 😅
 
-Слишком много результатов.
-Попробуйте выбрать конкретный комплекс, тип квартиры или цену`, {
+Пожалуйста, попробуйте выбрать конкретный комплекс, тип квартиры или цену`, {
           reply_markup: {
             inline_keyboard: [[
               {
