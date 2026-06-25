@@ -403,10 +403,6 @@ module.exports = async (ctx) => {
         return
       }
 
-      const tooManyResults = results.length > 20
-
-      const displayedResults = tooManyResults ? results.slice(0, 20) : results
-
       if (results.length === 0) {
         delete userFilters[userId]
         return ctx.reply('Ничего не найдено', {
@@ -421,6 +417,10 @@ module.exports = async (ctx) => {
         })
       }
 
+      const tooManyResults = results.length > 20
+
+      const displayedResults = tooManyResults ? results.slice(0, 20) : results
+
       for (const item of displayedResults) {
 
         const postLink = item.tg_link
@@ -429,6 +429,8 @@ module.exports = async (ctx) => {
           console.log(`У объекта ${item.id} отсутствует tg_link`)
           continue
         }
+
+        const floorText = item.floor === null ? '' : item.floor === 0 ? '\n🏢 Нулевой этаж (Ground Floor)' : `\n🏢 Этаж: ${item.floor}`
 
         const seaViewText = item.seaview ? '\n🌊 Вид на море' : ''
 
@@ -440,7 +442,7 @@ module.exports = async (ctx) => {
 
         await ctx.reply(
           `🏡 ${item.complex}
-🏙 ${item.developer}
+🏙 ${item.developer}${floorText}
 💷 £${item.price.toLocaleString('ru-RU')}
 🛏 ${item.bedroom}
 📍 ${item.region}${seaViewText}${titleText}${taxText}${furnitureText}`,
