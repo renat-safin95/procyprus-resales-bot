@@ -423,11 +423,12 @@ module.exports = async (ctx) => {
 
       for (const item of displayedResults) {
 
-        const cleanChatId = 
-          String(item.chat_id)
-            .replace(/^-100/, '')
+        const postLink = item.tg_link
 
-        const postLink = `https://t.me/c/${cleanChatId}/${item.message_id}`
+        if (!postLink) {
+          console.log(`У объекта ${item.id} отсутствует tg_link`)
+          continue
+        }
 
         const seaViewText = item.seaview ? '\n🌊 Вид на море' : ''
 
