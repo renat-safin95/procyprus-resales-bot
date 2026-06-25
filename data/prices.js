@@ -1,5 +1,9 @@
 module.exports = [
     {
+        label: 'До £50k',
+        value: 50000
+    },
+    {
         label: 'До £100k',
         value: 100000
     },

@@ -274,7 +274,7 @@ module.exports = async (ctx) => {
 
     }
     
-    if (data.startsWith('bedroom_')) {
+  if (data.startsWith('bedroom_')) {
 
     const bedroom = data.replace('bedroom_', '')
 
@@ -319,7 +319,7 @@ module.exports = async (ctx) => {
 
     }
 
-    if (data === 'bedrooms_all') {
+  if (data === 'bedrooms_all') {
 
   userFilters[userId].bedrooms = [...BEDROOMS]
 
@@ -350,7 +350,7 @@ module.exports = async (ctx) => {
 
     }
 
-    if (data === "bedrooms_apply") {
+  if (data === "bedrooms_apply") {
       userFilters[userId].step = 'price'
 
       if (userFilters[userId].bedrooms.length === 0) {
@@ -375,7 +375,7 @@ module.exports = async (ctx) => {
       )
     }
 
-    if (data.startsWith('price_')) {
+  if (data.startsWith('price_')) {
       
       const index = Number(data.replace('price_', ''))
 
@@ -398,14 +398,14 @@ module.exports = async (ctx) => {
 
       const { data: results, error } = await query.limit(21)
 
-      const tooManyResults = results.length > 20
-
-      const displayedResults = tooManyResults ? results.slice(0, 20) : results
-
       if (error) {
         console.error('[Supabase]', error)
         return
       }
+
+      const tooManyResults = results.length > 20
+
+      const displayedResults = tooManyResults ? results.slice(0, 20) : results
 
       if (results.length === 0) {
         delete userFilters[userId]
@@ -424,8 +424,7 @@ module.exports = async (ctx) => {
       for (const item of displayedResults) {
 
         const cleanChatId = 
-          item.chat_id
-            .toString()
+          String(item.chat_id)
             .replace(/^-100/, '')
 
         const postLink = `https://t.me/c/${cleanChatId}/${item.message_id}`
@@ -434,12 +433,16 @@ module.exports = async (ctx) => {
 
         const titleText = item.title_ready ? '\n📄 Титул готов' : ''
 
+        const taxText = item.taxes_paid ? '\n✅ Налоги оплачены' : ''
+
+        const furnitureText = item.furnished ? '\n🛋 С мебелью' : ''
+
         await ctx.reply(
           `🏡 ${item.complex}
 🏙 ${item.developer}
-💷 £${item.price}
+💷 £${item.price.toLocaleString('ru-RU')}
 🛏 ${item.bedroom}
-📍 ${item.region}${seaViewText}${titleText}`,
+📍 ${item.region}${seaViewText}${titleText}${taxText}${furnitureText}`,
           {
             reply_markup: {
               inline_keyboard: [[
