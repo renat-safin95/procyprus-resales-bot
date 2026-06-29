@@ -430,6 +430,8 @@ module.exports = async (ctx) => {
           continue
         }
 
+        const developerText = item.developer === null ? '' : `\n🏙 ${item.developer}`
+
         const floorText = item.floor === null ? '' : item.floor === 0 ? '\n🏢 Нулевой этаж (Ground Floor)' : `\n🏢 Этаж: ${item.floor}`
 
         const seaViewText = item.seaview ? '\n🌊 Вид на море' : ''
@@ -441,8 +443,7 @@ module.exports = async (ctx) => {
         const furnitureText = item.furnished ? '\n🛋 С мебелью' : ''
 
         await ctx.reply(
-          `🏡 ${item.complex}
-🏙 ${item.developer}${floorText}
+          `🏡 ${item.complex}${developerText}${floorText}
 💷 £${item.price.toLocaleString('ru-RU')}
 🛏 ${item.bedroom}
 📍 ${item.region}${seaViewText}${titleText}${taxText}${furnitureText}`,
